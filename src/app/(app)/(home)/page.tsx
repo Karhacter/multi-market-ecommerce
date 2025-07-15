@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function Home() {
   const trpc = useTRPC();
-  const categories = useQuery(trpc.categories.getMany.queryOptions());
+  const { data } = useQuery(trpc.auth.session.queryOptions());
 
   return (
     <div>
@@ -23,7 +23,6 @@ export default function Home() {
           <div>
             <Progress value={50} />
           </div>
-          {JSON.stringify(categories.data, null, 2)}
         </div>
       </div>
     </div>

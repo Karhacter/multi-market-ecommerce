@@ -6,6 +6,9 @@ const handler = (req: Request) =>
     endpoint: "/api/trpc",
     req,
     router: appRouter,
+    onError: (opts) => {
+      console.error(`[${opts.error.code}] ${opts.path}:`, opts.error);
+    },
     createContext: createTRPCContext,
   });
 export { handler as GET, handler as POST };
