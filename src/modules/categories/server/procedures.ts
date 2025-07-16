@@ -1,6 +1,3 @@
-import configPromise from "@payload-config";
-import { getPayload } from "payload";
-
 import { baseProcedure, createTRPCRouter } from "@/trpc/init";
 import { Category } from "@/payload-types";
 
@@ -23,7 +20,6 @@ export const CategoriesRouter = createTRPCRouter({
       subcategories: (doc.subcategories?.docs ?? []).map((doc) => ({
         // because depth 1 we are confiedent "doc" will be a type of "Category"
         ...(doc as Category),
-        subcategories: undefined,
       })),
     }));
 
