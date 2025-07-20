@@ -18,5 +18,5 @@ export const tagsRouter = createTRPCRouter({
       });
 
       return data;
-    }), 
+    }),
 });
