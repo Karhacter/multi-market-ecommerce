@@ -14,7 +14,7 @@ const categories = [
       { name: "Accounting", slug: "accounting" },
       {
         name: "Entrepreneurship",
-        slug: "entrepreneurship",
+        lug: "entrepreneurship",
       },
       { name: "Gigs & Side Projects", slug: "gigs-side-projects" },
       { name: "Investing", slug: "investing" },
@@ -140,6 +140,15 @@ const categories = [
 const seed = async () => {
   const payload = await getPayload({ config });
 
+  const adminTenant = await payload.create({
+    collection: "tenants",
+    data: {
+      name: "admin",
+      slug: "admin",
+      stripeAccountId: "admin",
+    },
+  });
+
   await payload.create({
     collection: "users",
     data: {
@@ -147,8 +156,14 @@ const seed = async () => {
       password: "password",
       roles: ["super-admin"],
       username: "admin",
+      tenants: [
+        {
+          tenants: adminTenant.id,
+        },
+      ],
     },
   });
+
   for (const category of categories) {
     const parentCategory = await payload.create({
       collection: "categories",
