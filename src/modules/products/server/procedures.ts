@@ -26,6 +26,7 @@ export const productsRouter = createTRPCRouter({
       return {
         ...product,
         image: product.image as Media | null,
+        // cover: product.cover as Media | null,
         tenant: product.tenant as Tenant & { image: Media | null },
       };
     }),

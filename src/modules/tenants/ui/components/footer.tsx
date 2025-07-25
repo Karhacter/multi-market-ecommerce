@@ -10,7 +10,7 @@ const poppins = Poppins({
 export const Footer = () => {
   return (
     <footer className="border-t font-medium bg-white">
-      <div className="max-w-(--breakpoint-xl) mx-auto flex gap-2 items-center h-full px-4 py-9 lg:px-12">
+      <div className="max-w-(--breakpoint-xl) mx-auto flex gap-2 items-center h-full px-4 py-8 lg:px-12">
         <p>Powered By....</p>
         <Link href="/">
           <span className={cn("text-2xl font-semibold", poppins.className)}>
