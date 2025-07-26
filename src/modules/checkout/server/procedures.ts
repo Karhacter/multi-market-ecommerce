@@ -7,7 +7,7 @@ import {
 } from "@/trpc/init";
 
 import { TRPCError } from "@trpc/server";
-import Stripe from "stripe";
+import type { Stripe } from "stripe";
 
 import { z } from "zod";
 import { CheckoutMetaData, ProductMeta } from "../types";
@@ -96,7 +96,7 @@ export const checkoutRouter = createTRPCRouter({
           enabled: true,
         },
         metadata: {
-          userID: ctx.session.user.id,
+          userId: ctx.session.user.id,
         } as CheckoutMetaData,
       });
 

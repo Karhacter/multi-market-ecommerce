@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import { getPayload } from "payload";
 
-import Stripe from "stripe";
+import type { Stripe } from "stripe";
 
 import config from "@payload-config";
 
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
               data: {
                 stripeCheckoutSeesionId: data.id,
                 user: user.id,
-                product: item.price.product.id,
+                product: item.price.product.metadata.id,
                 name: item.price.product.name,
               },
             });
