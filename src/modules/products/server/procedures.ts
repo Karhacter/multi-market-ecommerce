@@ -10,6 +10,7 @@ import { z } from "zod";
 
 import { sortValues } from "../search-params";
 import { DEFAULT_LIMIT } from "@/modules/tags/constanst";
+import { TRPCError } from "@trpc/server";
 
 export const productsRouter = createTRPCRouter({
   getOne: baseProcedure
@@ -26,7 +27,17 @@ export const productsRouter = createTRPCRouter({
         collection: "products",
         id: input.id,
         depth: 2,
+        select: {
+          content: false,
+        },
       });
+
+      if (product.isArchived) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Product not found",
+        });
+      }
 
       let isPurchased = false;
 
@@ -122,7 +133,11 @@ export const productsRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const where: Where = {};
+      const where: Where = {
+        isArchived: {
+          not_equals: true,
+        },
+      };
       let sort: Sort = "-createdAt";
 
       if (input.sort === "curated") {
@@ -154,7 +169,14 @@ export const productsRouter = createTRPCRouter({
 
       if (input.tenantSlug) {
         where["tenant.slug"] = { equals: input.tenantSlug };
+      } else {
+        // if we are loading product for public storefront ( not tenantSlug )
+        // these products are exclusively private to the tenant store
+        where["isPrivate"] = {
+          not_equals: true,
+        };
       }
+
       if (input.category) {
         const categoriesData = await ctx.payload.find({
           collection: "categories",
@@ -205,6 +227,9 @@ export const productsRouter = createTRPCRouter({
         sort,
         page: input.cursor,
         limit: input.limit,
+        select: {
+          content: false,
+        },
       });
 
       const dataWithSummarizedReviews = await Promise.all(

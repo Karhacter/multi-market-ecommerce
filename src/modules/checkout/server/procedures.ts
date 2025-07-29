@@ -12,8 +12,53 @@ import type { Stripe } from "stripe";
 import { z } from "zod";
 import { CheckoutMetaData, ProductMeta } from "../types";
 import { stripe } from "@/lib/stripe";
+import { PLATFORM_FEE_PERCENT } from "@/modules/tags/constanst";
 
 export const checkoutRouter = createTRPCRouter({
+  verify: protectedProcedure.mutation(async ({ ctx }) => {
+    const user = await ctx.payload.findByID({
+      collection: "users",
+      id: ctx.session.user.id,
+      depth: 0,
+    });
+
+    if (!user) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "USer not Found",
+      });
+    }
+
+    const tenantId = user.tenants?.[0]?.tenants as string;
+    const tenant = await ctx.payload.findByID({
+      collection: "tenants",
+      id: tenantId,
+    });
+
+    if (!tenant) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Tenants Not Found",
+      });
+    }
+
+    const accountLink = await stripe.accountLinks.create({
+      account: tenant.stripeAccountId,
+      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL!}/admin`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL!}/admin`,
+      type: "account_onboarding",
+    });
+
+    if (!accountLink.url) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Failed to create verification link",
+      });
+    }
+
+    return { url: accountLink.url };
+  }),
+
   purchase: protectedProcedure
     .input(
       z.object({
@@ -35,6 +80,11 @@ export const checkoutRouter = createTRPCRouter({
             {
               "tenant.slug": {
                 equals: input.tenantSlug,
+              },
+            },
+            {
+              isArchived: {
+                not_equals: true,
               },
             },
           ],
@@ -68,6 +118,13 @@ export const checkoutRouter = createTRPCRouter({
         });
       }
 
+      if (!tenant.stripeDetailsSubmitted) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Tenant not allowed to sell products",
+        });
+      }
+
       const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
         products.docs.map((product) => ({
           quantity: 1,
@@ -86,19 +143,36 @@ export const checkoutRouter = createTRPCRouter({
           },
         }));
 
-      const checkout = await stripe.checkout.sessions.create({
-        customer_email: ctx.session.user.email,
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSlug}/checkout?success=true`,
-        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSlug}/checkout?cancel=true`,
-        mode: "payment",
-        line_items: lineItems,
-        invoice_creation: {
-          enabled: true,
+      const totalAmount = products.docs.reduce(
+        (acc, item) => acc + item.price * 100,
+        0
+      );
+
+      const platFormFeeAmount = Math.round(
+        totalAmount * (PLATFORM_FEE_PERCENT / 100)
+      );
+
+      const checkout = await stripe.checkout.sessions.create(
+        {
+          customer_email: ctx.session.user.email,
+          success_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSlug}/checkout?success=true`,
+          cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/tenants/${input.tenantSlug}/checkout?cancel=true`,
+          mode: "payment",
+          line_items: lineItems,
+          invoice_creation: {
+            enabled: true,
+          },
+          metadata: {
+            userId: ctx.session.user.id,
+          } as CheckoutMetaData,
+          payment_intent_data: {
+            application_fee_amount: platFormFeeAmount,
+          },
         },
-        metadata: {
-          userId: ctx.session.user.id,
-        } as CheckoutMetaData,
-      });
+        {
+          stripeAccount: tenant.stripeAccountId,
+        }
+      );
 
       if (!checkout.url) {
         throw new TRPCError({
@@ -121,9 +195,18 @@ export const checkoutRouter = createTRPCRouter({
         collection: "products",
         depth: 2, // Populate 'category', 'image'
         where: {
-          id: {
-            in: input.ids,
-          },
+          and: [
+            {
+              id: {
+                in: input.ids,
+              },
+            },
+            {
+              isArchived: {
+                not_equals: true
+              },
+            },
+          ],
         },
       });
 
