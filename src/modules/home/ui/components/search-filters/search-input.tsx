@@ -1,12 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import {
-  BookmarkCheck,
-  BookmarkCheckIcon,
-  ListFilterIcon,
-  SearchIcon,
-} from "lucide-react";
+import { BookmarkCheckIcon, ListFilterIcon, SearchIcon } from "lucide-react";
 import { CategoriesSideBar } from "./categories-sidebar";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";

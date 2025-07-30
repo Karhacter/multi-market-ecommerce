@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useRef, useState } from "react";
-import { useDropdownPosition } from "./use-dropdown-position";
 import { SubcategoryMenu } from "./subcategoy-menu";
 import Link from "next/link";
 import { CategoriesGetManyOutput } from "@/modules/categories/types";
@@ -30,12 +29,11 @@ export const CategoryDropdown = ({
 
   const onMouseLeave = () => setIsopen(false);
 
-
-  const toggleDrop = () => {
-    if (category.subcategories?.length) {
-      setIsopen(!isOpen);
-    }
-  };
+  // const toggleDrop = () => {
+  //   if (category.subcategories?.length) {
+  //     setIsopen(!isOpen);
+  //   }
+  // };
   return (
     <div
       className="relative"
@@ -69,10 +67,7 @@ export const CategoryDropdown = ({
         )}
       </div>
 
-      <SubcategoryMenu
-        category={category}
-        isOpen={isOpen}
-      />
+      <SubcategoryMenu category={category} isOpen={isOpen} />
     </div>
   );
 };

@@ -4,6 +4,9 @@ import { caller } from "@/trpc/server";
 
 import { redirect } from "next/navigation";
 
+// Force dynamic rendering since we need to check auth session
+export const dynamic = "force-dynamic";
+
 const Page = async () => {
   const session = await caller.auth.session();
 

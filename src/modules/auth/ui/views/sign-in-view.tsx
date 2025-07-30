@@ -4,7 +4,7 @@ import z from "zod";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Poppins } from "next/font/google";
-import { loginSchemas, registerSchemas } from "../../schemas";
+import { loginSchemas } from "../../schemas";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {

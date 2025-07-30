@@ -7,14 +7,12 @@ const MIN_RATING = 0;
 
 interface StarRatingProps {
   rating: number;
-  className?: string;
   iconClassName?: string;
   text?: string;
 }
 
 export const StarRating = ({
   rating,
-  className,
   iconClassName,
   text,
 }: StarRatingProps) => {

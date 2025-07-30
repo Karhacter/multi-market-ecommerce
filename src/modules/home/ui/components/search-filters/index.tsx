@@ -23,10 +23,10 @@ export const SearchFilters = () => {
   const activeCateName = activeCateData?.name || null;
 
   const activeSubcategory = params.subcategory as string | undefined;
-  const activeSubcategoryName =
-    activeCateData?.subcategories?.find(
-      (subcategory) => subcategory.slug === activeSubcategory
-    )?.name || null;
+  // const activeSubcategoryName =
+  // activeCateData?.subcategories?.find(
+  // (subcategory) => subcategory.slug === activeSubcategory
+  // )?.name || null;
 
   return (
     <div
